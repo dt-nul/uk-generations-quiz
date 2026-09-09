@@ -1,6 +1,6 @@
 import streamlit as st
 
-from data_manager import load_questions
+from data_manager import load_questions, save_result
 from quiz import Quiz
 from validation import validate_name
 
@@ -61,7 +61,7 @@ if name:
             )
 
         if st.button("Submit Quiz"):
-            # Identify unanswered questions before attempting to calculate a score.
+            # Identify unanswered questions before calculating a score.
             unanswered = [
                 index
                 for index, answer in answers.items()
@@ -74,7 +74,7 @@ if name:
                 )
 
             else:
-                # Submit each selected answer to the Quiz object's scoring logic.
+                # Submit each answer to the Quiz object's scoring logic.
                 for index, answer in answers.items():
                     quiz.submit_answer(
                         quiz.questions[index],
@@ -92,9 +92,23 @@ if name:
 
                 # A score of 70% or above is treated as a pass.
                 if percentage >= 70:
-                    st.success("Pass")
+                    result = "Pass"
+                    st.success(result)
                 else:
-                    st.error("Not yet passed")
+                    result = "Not yet passed"
+                    st.error(result)
+
+                # Save the completed attempt to persistent CSV storage.
+                save_result(
+                    name=name,
+                    score=quiz.score,
+                    total_questions=len(quiz.questions),
+                    percentage=percentage,
+                    result=result,
+                    file_path="data/results.csv"
+                )
+
+                st.info("Your result has been saved.")
 
     else:
         st.error(

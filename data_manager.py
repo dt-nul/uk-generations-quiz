@@ -67,7 +67,8 @@ def save_result(
     new_result = pd.DataFrame([result_data])
 
     # Check whether the results file already exists.
-    file_exists = Path(file_path).exists()
+    # A file must exist and contain data before results can be appended without headers.
+    file_exists = Path(file_path).exists() and Path(file_path).stat().st_size > 0
 
     # Append the result without overwriting previous quiz attempts.
     new_result.to_csv(
