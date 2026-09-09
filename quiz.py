@@ -31,3 +31,10 @@ class Quiz:
         """Submit an answer and increase the score when it is correct."""
         if question.is_correct(answer):
             self.score += 1
+
+    def calculate_percentage(self) -> float:
+        """Calculate and return the quiz score as a percentage."""
+        if not self.questions:
+            return 0.0
+
+        return (self.score / len(self.questions)) * 100

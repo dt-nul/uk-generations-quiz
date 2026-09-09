@@ -47,3 +47,25 @@ def test_correct_answer_increases_score():
     quiz.submit_answer(question, "Millennials")
 
     assert quiz.score == 1
+
+def test_calculate_percentage():
+    """Test that the quiz calculates the correct percentage score."""
+    question = Question(
+        question_text="Test question",
+        options=["A", "B", "C", "D"],
+        correct_answer="A",
+        category="Test",
+        source="Test source"
+    )
+
+    quiz = Quiz([question])
+    quiz.submit_answer(question, "A")
+
+    assert quiz.calculate_percentage() == 100.0
+
+
+def test_empty_quiz_percentage_is_zero():
+    """Test that an empty quiz returns zero rather than causing an error."""
+    quiz = Quiz([])
+
+    assert quiz.calculate_percentage() == 0.0
