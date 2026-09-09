@@ -1,3 +1,6 @@
+from datetime import datetime
+from pathlib import Path
+
 import pandas as pd
 
 from quiz import Question
@@ -40,8 +43,43 @@ def load_questions(file_path: str) -> list[Question]:
         return []
 
 
+def save_result(
+    name: str,
+    score: int,
+    total_questions: int,
+    percentage: float,
+    result: str,
+    file_path: str
+) -> None:
+    """Save a completed quiz result to a CSV file."""
+
+    # Create a record containing the details of the completed quiz.
+    result_data = {
+        "name": name,
+        "date_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "score": score,
+        "total_questions": total_questions,
+        "percentage": percentage,
+        "result": result
+    }
+
+    # Convert the single result into a DataFrame for CSV storage.
+    new_result = pd.DataFrame([result_data])
+
+    # Check whether the results file already exists.
+    file_exists = Path(file_path).exists()
+
+    # Append the result without overwriting previous quiz attempts.
+    new_result.to_csv(
+        file_path,
+        mode="a",
+        header=not file_exists,
+        index=False
+    )
+
+
 if __name__ == "__main__":
-    # Temporary check used during development to verify CSV loading.
+    # Temporary development check for the question-loading functionality.
     questions = load_questions("data/questions.csv")
 
     print(f"Loaded {len(questions)} questions")
