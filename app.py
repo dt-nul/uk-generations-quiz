@@ -121,7 +121,38 @@ if name:
                         f"({performance['percentage']:.1f}%)"
                     )
 
-                # Display a confirmation that the attempt was stored.
+                # Allow participants to review every answer after submission.
+                st.subheader("Answer Review")
+
+                for index, answer_record in enumerate(quiz.answers):
+                    question = answer_record["question"]
+                    user_answer = answer_record["answer"]
+                    is_correct = answer_record["is_correct"]
+
+                    if is_correct:
+                        st.success(
+                            f"Question {index + 1}: Correct"
+                        )
+                    else:
+                        st.error(
+                            f"Question {index + 1}: Incorrect"
+                        )
+
+                    st.write(f"**{question.question_text}**")
+                    st.write(f"Your answer: **{user_answer}**")
+
+                    # Reveal the correct answer when the participant was incorrect.
+                    if not is_correct:
+                        st.write(
+                            f"Correct answer: **{question.correct_answer}**"
+                        )
+
+                    st.caption(
+                        f"Category: {question.category} | "
+                        f"Source: {question.source}"
+                    )
+
+                # Confirm that the completed attempt has been stored.
                 st.info("Your result has been saved.")
 
     else:
@@ -167,7 +198,7 @@ else:
     # Display stored results in a readable table.
     st.dataframe(
         results,
-        use_container_width=True,
+        width="stretch",
         hide_index=True
     )
 
