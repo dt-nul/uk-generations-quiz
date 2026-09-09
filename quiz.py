@@ -19,3 +19,10 @@ class Question:
     def is_correct(self, answer: str) -> bool:
         """Return True when the supplied answer matches the correct answer."""
         return answer == self.correct_answer
+class Quiz:
+    """Represent a quiz containing multiple questions."""
+
+    def __init__(self, questions: list[Question]) -> None:
+        """Initialise a quiz with a list of questions and a score of zero."""
+        self.questions = questions
+        self.score = 0

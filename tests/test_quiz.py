@@ -1,4 +1,4 @@
-from quiz import Question
+from quiz import Question, Quiz
 
 
 def test_correct_answer_returns_true():
@@ -25,3 +25,10 @@ def test_incorrect_answer_returns_false():
     )
 
     assert question.is_correct("Gen Z") is False
+
+
+def test_quiz_starts_with_zero_score():
+    """Test that a new quiz starts with a score of zero."""
+    quiz = Quiz([])
+
+    assert quiz.score == 0
