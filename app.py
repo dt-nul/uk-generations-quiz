@@ -109,12 +109,26 @@ if name:
                     file_path="data/results.csv"
                 )
 
+                # Display performance for each quiz category.
+                st.subheader("Performance by Category")
+
+                category_performance = quiz.calculate_category_performance()
+
+                for category, performance in category_performance.items():
+                    st.write(
+                        f"**{category}:** "
+                        f"{performance['correct']}/{performance['total']} "
+                        f"({performance['percentage']:.1f}%)"
+                    )
+
+                # Display a confirmation that the attempt was stored.
                 st.info("Your result has been saved.")
 
     else:
         st.error(
             "Please enter a valid name using letters and spaces only."
         )
+
 
 # Separate the quiz from the results dashboard.
 st.divider()

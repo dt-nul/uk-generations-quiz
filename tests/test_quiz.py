@@ -69,3 +69,45 @@ def test_empty_quiz_percentage_is_zero():
     quiz = Quiz([])
 
     assert quiz.calculate_percentage() == 0.0
+
+def test_calculate_category_performance():
+    """Test that category performance is calculated correctly."""
+    questions = [
+        Question(
+            question_text="Population question",
+            options=["A", "B", "C", "D"],
+            correct_answer="A",
+            category="Population",
+            source="Test source"
+        ),
+        Question(
+            question_text="Population question 2",
+            options=["A", "B", "C", "D"],
+            correct_answer="B",
+            category="Population",
+            source="Test source"
+        ),
+        Question(
+            question_text="Economic question",
+            options=["A", "B", "C", "D"],
+            correct_answer="C",
+            category="Economic",
+            source="Test source"
+        )
+    ]
+
+    quiz = Quiz(questions)
+
+    quiz.submit_answer(questions[0], "A")
+    quiz.submit_answer(questions[1], "A")
+    quiz.submit_answer(questions[2], "C")
+
+    performance = quiz.calculate_category_performance()
+
+    assert performance["Population"]["correct"] == 1
+    assert performance["Population"]["total"] == 2
+    assert performance["Population"]["percentage"] == 50.0
+
+    assert performance["Economic"]["correct"] == 1
+    assert performance["Economic"]["total"] == 1
+    assert performance["Economic"]["percentage"] == 100.0
