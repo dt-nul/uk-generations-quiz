@@ -19,6 +19,8 @@ class Question:
     def is_correct(self, answer: str) -> bool:
         """Return True when the supplied answer matches the correct answer."""
         return answer == self.correct_answer
+
+
 class Quiz:
     """Represent a quiz containing multiple questions."""
 
@@ -29,12 +31,15 @@ class Quiz:
 
     def submit_answer(self, question: Question, answer: str) -> None:
         """Submit an answer and increase the score when it is correct."""
+        # Use the Question object's method to check whether the answer is correct.
         if question.is_correct(answer):
             self.score += 1
 
     def calculate_percentage(self) -> float:
         """Calculate and return the quiz score as a percentage."""
+        # Prevent a division-by-zero error if a quiz contains no questions.
         if not self.questions:
             return 0.0
 
+        # Convert the raw score into a percentage of the available marks.
         return (self.score / len(self.questions)) * 100
