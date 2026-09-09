@@ -26,3 +26,8 @@ class Quiz:
         """Initialise a quiz with a list of questions and a score of zero."""
         self.questions = questions
         self.score = 0
+
+    def submit_answer(self, question: Question, answer: str) -> None:
+        """Submit an answer and increase the score when it is correct."""
+        if question.is_correct(answer):
+            self.score += 1

@@ -32,3 +32,18 @@ def test_quiz_starts_with_zero_score():
     quiz = Quiz([])
 
     assert quiz.score == 0
+
+def test_correct_answer_increases_score():
+    """Test that submitting a correct answer increases the quiz score."""
+    question = Question(
+        question_text="Which generation had the largest UK population in 2024?",
+        options=["Gen Z", "Millennials", "Gen X", "Baby Boomers"],
+        correct_answer="Millennials",
+        category="Population",
+        source="Statista / ONS"
+    )
+
+    quiz = Quiz([question])
+    quiz.submit_answer(question, "Millennials")
+
+    assert quiz.score == 1
