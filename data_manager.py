@@ -15,8 +15,8 @@ def load_questions(file_path: str) -> list[Question]:
         # Store the Question objects created from each row of the CSV file.
         questions = []
 
+        # Convert each DataFrame row into a Question object.
         for _, row in data.iterrows():
-            # Convert each DataFrame row into a Question object.
             question = Question(
                 question_text=row["question"],
                 options=[
@@ -66,17 +66,76 @@ def save_result(
     # Convert the single result into a DataFrame for CSV storage.
     new_result = pd.DataFrame([result_data])
 
-    # Check whether the results file already exists.
-    # A file must exist and contain data before results can be appended without headers.
-    file_exists = Path(file_path).exists() and Path(file_path).stat().st_size > 0
+    path = Path(file_path)
 
-    # Append the result without overwriting previous quiz attempts.
-    new_result.to_csv(
-        file_path,
-        mode="a",
-        header=not file_exists,
-        index=False
-    )
+    # Check whether an existing results file contains the expected columns.
+    file_is_valid = False
+
+    if path.exists() and path.read_text(encoding="utf-8").strip():
+        try:
+            existing_results = pd.read_csv(file_path)
+
+            required_columns = [
+                "name",
+                "date_time",
+                "score",
+                "total_questions",
+                "percentage",
+                "result"
+            ]
+
+            file_is_valid = all(
+                column in existing_results.columns
+                for column in required_columns
+            )
+
+        except (pd.errors.EmptyDataError, pd.errors.ParserError):
+            file_is_valid = False
+
+    if file_is_valid:
+        # Append the new result to an existing valid results file.
+        new_result.to_csv(
+            file_path,
+            mode="a",
+            header=False,
+            index=False
+        )
+    else:
+        # Recreate the file with the correct headers if it is missing,
+        # empty or malformed.
+        new_result.to_csv(
+            file_path,
+            mode="w",
+            header=True,
+            index=False
+        )
+
+
+def load_results(file_path: str) -> pd.DataFrame:
+    """Load valid saved quiz results into a pandas DataFrame."""
+    try:
+        # Read the stored results from persistent CSV storage.
+        results = pd.read_csv(file_path)
+
+        required_columns = [
+            "name",
+            "date_time",
+            "score",
+            "total_questions",
+            "percentage",
+            "result"
+        ]
+
+        # Only return results when all expected columns are present.
+        if all(column in results.columns for column in required_columns):
+            return results
+
+        # Treat malformed result files as having no usable results.
+        return pd.DataFrame()
+
+    except (FileNotFoundError, pd.errors.EmptyDataError, pd.errors.ParserError):
+        # Return an empty DataFrame when usable results are unavailable.
+        return pd.DataFrame()
 
 
 if __name__ == "__main__":

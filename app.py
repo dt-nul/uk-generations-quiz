@@ -1,6 +1,7 @@
+import pandas as pd
 import streamlit as st
 
-from data_manager import load_questions, save_result
+from data_manager import load_questions, load_results, save_result
 from quiz import Quiz
 from validation import validate_name
 
@@ -114,3 +115,54 @@ if name:
         st.error(
             "Please enter a valid name using letters and spaces only."
         )
+
+# Separate the quiz from the results dashboard.
+st.divider()
+st.header("Results Dashboard")
+
+# Load all previous quiz attempts from persistent storage.
+results = load_results("data/results.csv")
+
+if results.empty:
+    st.info("No quiz results have been recorded yet.")
+
+else:
+    # Calculate summary measures from the stored results.
+    total_attempts = len(results)
+    average_score = results["percentage"].mean()
+    pass_rate = (results["result"] == "Pass").mean() * 100
+
+    # Display headline performance measures in three columns.
+    metric_1, metric_2, metric_3 = st.columns(3)
+
+    metric_1.metric("Total Attempts", total_attempts)
+    metric_2.metric("Average Score", f"{average_score:.1f}%")
+    metric_3.metric("Pass Rate", f"{pass_rate:.1f}%")
+
+    st.subheader("Results Over Time")
+
+    # Prepare timestamped percentage scores for visualisation.
+    chart_data = results.copy()
+    chart_data["date_time"] = pd.to_datetime(chart_data["date_time"])
+    chart_data = chart_data.set_index("date_time")
+
+    st.line_chart(chart_data["percentage"])
+
+    st.subheader("Previous Attempts")
+
+    # Display stored results in a readable table.
+    st.dataframe(
+        results,
+        use_container_width=True,
+        hide_index=True
+    )
+
+    # Convert the DataFrame to CSV data for user download.
+    csv_data = results.to_csv(index=False).encode("utf-8")
+
+    st.download_button(
+        label="Download Results CSV",
+        data=csv_data,
+        file_name="quiz_results.csv",
+        mime="text/csv"
+    )
