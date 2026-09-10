@@ -2,17 +2,25 @@
 
 ## Introduction
 
-The UK Generations & Consumer Insight Quiz is a workplace-focused Python application designed to help employees test and develop their knowledge of UK generational demographics and consumer characteristics.
+The UK Generations & Consumer Insight Quiz is a workplace-focused Python application developed for UK Greetings. The application is primarily intended for colleagues within the Consumer Insight team, although it could also be useful for the Business Intelligence (BI) team. Its purpose is to help colleagues test and develop their knowledge of UK generational demographics and consumer characteristics through an interactive multiple-choice quiz.
 
-Understanding generational differences provides useful context for consumer insight, including population, demographics, employment, earnings and perceptions. I chose an interactive quiz rather than a static document so users could actively test their knowledge and receive immediate feedback.
+Generational knowledge is relevant to the work of the Consumer Insight team because different generations can demonstrate different purchasing behaviours and preferences. Within the greetings-card market, this can include differences in preferred card designs and the occasions for which consumers purchase cards. Population size is also important because understanding the relative size of different generations can provide useful context when considering which consumer groups may represent important target audiences.
 
-The ten questions use statistics from Statista reports, including data originally sourced from organisations such as the Office for National Statistics (ONS) and Ipsos. Each question displays its category and source to make the provenance of the information visible.
+The Consumer Insight team may be asked by other areas of UK Greetings to provide insight relating to particular generations. It is therefore valuable for the team to maintain a good understanding of generational definitions, population characteristics and behavioural differences. This workplace relevance was the main reason I selected the topic rather than developing a generic knowledge or mathematics quiz.
 
-The original minimum viable product (MVP) covered name entry, a multiple-choice quiz, scoring and persistent result storage. Once this worked reliably, I added category performance, answer review, a results dashboard, visualisation and CSV export. Python provides the core logic, Streamlit the interface, pandas the data handling, and pytest/GitHub Actions the testing and continuous integration.
+The quiz contains ten questions using statistics from Statista reports, including data originally sourced from organisations such as the Office for National Statistics (ONS) and Ipsos. Each question displays its category and source so that the provenance and context of the information remain visible to the participant.
+
+The original minimum viable product (MVP) covered participant-name validation, a multiple-choice quiz, scoring and persistent result storage. Once the core functionality was working reliably, I extended the application with category-level performance analysis, answer review, a results dashboard, data visualisation and CSV export. Python provides the core application logic, Streamlit the graphical interface, pandas the data handling, and pytest and GitHub Actions support automated testing and continuous integration.
 
 ---
 
 ## Design
+
+### GUI Design
+
+<!-- Add final GUI prototype screenshot here before submission. -->
+
+The planned interface was designed around a simple user journey: participant identification, quiz completion, result feedback and historical performance. The final Streamlit implementation retains this structure while adding category-level feedback, answer review and a results dashboard.
 
 ### User Journey
 
@@ -132,23 +140,113 @@ The modular architecture separates interface, validation, quiz logic and data ma
 
 ## Development
 
-### Core Logic and Data Handling
+### Core Logic and Object-Oriented Design
 
-The `Question` and `Quiz` classes in `quiz.py` contain the core object-oriented logic. `Question.is_correct()` encapsulates answer checking, while `Quiz.submit_answer()` updates the score and records each response. Recorded responses support both category analysis and post-quiz answer review. `calculate_percentage()` safely returns `0.0` for an empty quiz, avoiding division by zero.
+The `Question` and `Quiz` classes in `quiz.py` contain the core object-oriented logic. `Question.is_correct()` encapsulates answer checking, while `Quiz.submit_answer()` updates the score and records each response.
 
-Questions are stored in `data/questions.csv` rather than hard-coded into the interface. `data_manager.py` uses pandas to load each CSV row and create a `Question` object. Completed attempts are written to `data/results.csv` with the participant name, timestamp, score, total questions, percentage and result. pandas also provides the DataFrame used for dashboard metrics, visualisation and export.
+The following method is taken directly from the final `Quiz` class:
+
+```python
+def submit_answer(self, question: Question, answer: str) -> None:
+    """Submit an answer, record it and update the score when correct."""
+    # Use the Question object's method to determine whether the answer is correct.
+    is_correct = question.is_correct(answer)
+
+    if is_correct:
+        self.score += 1
+
+    # Keep an answer history for later category analysis and answer review.
+    self.answers.append(
+        {
+            "question": question,
+            "answer": answer,
+            "is_correct": is_correct
+        }
+    )
+```
+
+The `Quiz` object delegates answer checking to the supplied `Question` rather than duplicating the comparison. Recording the answer and its correctness allows the same data to support category analysis and answer review.
+
+`calculate_percentage()` also handles an empty quiz by returning `0.0`, preventing division by zero. `calculate_category_performance()` uses a nested dictionary to group submitted answers by category, count correct responses and calculate a percentage for each area.
+
+### Data Handling and Persistence
+
+Questions are stored in `data/questions.csv` rather than being hard-coded into the interface. `data_manager.py` reads the file into a pandas DataFrame and converts each row into a `Question` object:
+
+```python
+data = pd.read_csv(file_path)
+
+questions = []
+
+for _, row in data.iterrows():
+    question = Question(
+        question_text=row["question"],
+        options=[
+            row["option_a"],
+            row["option_b"],
+            row["option_c"],
+            row["option_d"]
+        ],
+        correct_answer=row["correct_answer"],
+        category=row["category"],
+        source=row["source"]
+    )
+
+    questions.append(question)
+```
+
+This separates quiz content from application logic, making the question set easier to maintain.
+
+Completed attempts are written to `data/results.csv` with the participant name, timestamp, score, total questions, percentage and result. pandas also provides the DataFrame used to calculate dashboard metrics, visualise previous scores and export stored results.
 
 ### Validation and Exception Handling
 
-`validation.py` separates participant-name validation from the interface. A regular expression accepts letters and spaces while rejecting values such as `Daniel123`.
+`validation.py` separates participant-name validation from the Streamlit interface. The final validation function is:
 
-Data-loading functions handle missing, empty or malformed CSV files. This became important during integration testing when an empty `results.csv` was treated as existing data, resulting in missing headers and a dashboard `KeyError` for `percentage`.
+```python
+def validate_name(name: str) -> bool:
+    """Return True when a name contains letters and spaces only."""
+    # Remove leading/trailing whitespace before applying validation.
+    cleaned_name = name.strip()
 
-I changed the storage logic to check both file content and expected columns before appending data. `load_results()` also returns an empty DataFrame when usable results are unavailable. Re-testing confirmed that an empty results file now produces a clear no-results message instead of crashing.
+    # Accept alphabetic names with optional single spaces between words.
+    return bool(re.fullmatch(r"[A-Za-z]+(?: [A-Za-z]+)*", cleaned_name))
+```
+
+The function depends only on its input parameter and has no external state, so the same input consistently produces the same output. This makes it independently testable with pytest. Inputs containing numbers, such as `Daniel123`, are rejected.
+
+Exception handling is used when loading questions and results. Missing files, malformed CSV data and empty result files are handled without allowing an unhandled exception to terminate the application.
+
+Integration testing exposed a problem with `results.csv`: an existing but empty file could lead to missing headers and later cause a dashboard `KeyError` for `percentage`. The final storage logic checks whether existing result data has the required structure before appending:
+
+```python
+if path.exists() and path.read_text(encoding="utf-8").strip():
+    try:
+        existing_results = pd.read_csv(file_path)
+
+        required_columns = [
+            "name",
+            "date_time",
+            "score",
+            "total_questions",
+            "percentage",
+            "result"
+        ]
+
+        file_is_valid = all(
+            column in existing_results.columns
+            for column in required_columns
+        )
+
+    except (pd.errors.EmptyDataError, pd.errors.ParserError):
+        file_is_valid = False
+```
+
+If the file is missing, empty or malformed, it is recreated with the correct headers rather than appending incompatible data. `load_results()` similarly returns an empty DataFrame when usable results are unavailable. Re-testing confirmed that the application then displayed a no-results message rather than crashing.
 
 ### Graphical User Interface
 
-Streamlit provides the user interface while the underlying logic remains in separate modules. Users enter a validated name, answer ten sourced questions using radio buttons and cannot submit until every question has an answer.
+Streamlit provides the GUI while the underlying validation, quiz and storage logic remains in separate modules. Users enter a validated name, answer ten sourced questions using radio buttons and cannot submit until every question has an answer.
 
 After submission the application displays score, percentage and pass status, followed by category performance and answer review. Incorrect responses reveal the correct answer, turning the application into a learning tool rather than only a scoring mechanism.
 
@@ -156,7 +254,7 @@ After submission the application displays score, percentage and pass status, fol
 
 ![Answer review evidence](evidence/11_answer_review.png)
 
-The dashboard provides total attempts, average score, pass rate, historical results, a performance chart and CSV download.
+The dashboard uses stored results to display total attempts, average score, pass rate, historical results and a performance chart. The DataFrame can also be downloaded as CSV.
 
 ![Results dashboard](evidence/08_results_dashboard.png)
 
@@ -166,9 +264,9 @@ The dashboard provides total attempts, average score, pass rate, historical resu
 
 ### Strategy and Test-Driven Development
 
-I used automated unit testing, TDD, manual integration testing and continuous integration. Unit tests cover deterministic logic, while manual tests verify complete Streamlit workflows and interaction with persistent storage.
+I used automated unit testing, test-driven development (TDD), manual integration testing and continuous integration. Unit tests cover deterministic core logic, while manual tests verify complete Streamlit workflows and interaction with persistent storage.
 
-TDD was used for core functionality. For example, the expected `Question` behaviour was expressed as a test before the implementation existed, producing a RED state. I then implemented the minimum required behaviour until the test passed (GREEN).
+TDD was used for core functionality. For example, expected `Question` behaviour was expressed as a test before the required implementation existed, producing a RED state. I then implemented the required behaviour until the test passed (GREEN).
 
 **RED – test written before implementation:**
 
@@ -182,7 +280,7 @@ The same approach was used during quiz scoring and validation development. Addit
 
 ### Automated Testing
 
-The final pytest suite contains **15 passing tests** covering answer checking, scoring, percentage calculation, empty-quiz handling, category analysis, validation and result persistence. Boundary tests verify both 0% and 100% scoring behaviour.
+The final pytest suite contains **15 passing tests** covering answer checking, scoring, percentage calculation, empty-quiz handling, category analysis, validation and persistent result handling. Boundary tests verify both 0% and 100% scoring behaviour.
 
 ![Final pytest suite showing 15 passing tests](evidence/09_pytest_15_passed.png)
 
@@ -212,47 +310,54 @@ The empty-results-file defect was found through integration testing even though 
 
 ### Continuous Integration
 
-GitHub Actions runs pytest on pushes and pull requests to `main`, providing an independent check in an Ubuntu environment.
+GitHub Actions runs pytest when changes are pushed to `main` or a pull request targets `main`. The workflow checks out the repository, configures Python, installs the required packages and executes the automated test suite in an Ubuntu environment.
 
 ![Successful GitHub Actions workflow](evidence/07_github_actions_ci.png)
+
+This provides a repeatable check that the project works outside my local development environment.
 
 ---
 
 ## Documentation
 
-### Running the Application
+### User Documentation
 
-Install dependencies:
+To run the application, install the project dependencies:
 
 ```powershell
 python -m pip install -r requirements.txt
 ```
 
-Run the application:
+Then start Streamlit:
 
 ```powershell
 python -m streamlit run app.py
 ```
 
-Enter a valid name, answer all ten questions and select **Submit Quiz**. The application then displays the result, category analysis and answer review. Previous attempts appear in the dashboard and can be downloaded as CSV.
+The user enters a valid name, answers all ten questions and selects **Submit Quiz**. The application displays the overall result, category analysis and answer review. Previous attempts are available through the dashboard and can be downloaded as CSV.
 
-Run automated tests with:
+Invalid names display a validation message, while incomplete quizzes produce a warning and are not scored.
+
+### Technical Documentation
+
+Automated tests can be executed locally using:
 
 ```powershell
 python -m pytest
 ```
 
-### Project Structure
+The application was developed using **Python 3.14.4**.
 
 | File | Responsibility |
 |---|---|
-| `app.py` | Streamlit interface |
-| `quiz.py` | Question and quiz logic |
-| `validation.py` | Name validation |
+| `app.py` | Streamlit interface and application coordination |
+| `quiz.py` | `Question` and `Quiz` classes and scoring logic |
+| `validation.py` | Participant-name validation |
 | `data_manager.py` | CSV loading and result persistence |
-| `data/` | Question and result storage |
-| `tests/` | pytest suite |
-| `.github/workflows/tests.yml` | CI workflow |
+| `data/questions.csv` | Persistent question dataset |
+| `data/results.csv` | Persistent result storage |
+| `tests/` | pytest automated test suite |
+| `.github/workflows/tests.yml` | GitHub Actions CI workflow |
 | `evidence/` | Development and testing evidence |
 
 ---
