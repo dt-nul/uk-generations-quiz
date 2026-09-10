@@ -177,7 +177,25 @@ The application follows a modular structure in which the Streamlit interface is 
 
 ### Manual Testing
 
-<!-- Add final manual testing table. -->
+### Manual Testing
+
+Manual testing was performed alongside automated unit testing to verify the complete user journey and the interaction between the graphical interface, quiz logic and persistent data storage.
+
+| ID | Test | Expected result | Actual result | Status |
+|---|---|---|---|---|
+| M01 | Enter a valid participant name | Quiz becomes available | Quiz displayed successfully | Pass |
+| M02 | Enter a name containing numbers | Validation error displayed | Validation error displayed | Pass |
+| M03 | Submit with unanswered questions | Warning displayed and quiz not scored | Warning displayed | Pass |
+| M04 | Complete quiz with mixed answers | Score and percentage calculated correctly | 4/10, 7/10 and 6/10 were calculated correctly | Pass |
+| M05 | Display category performance | Category scores should reconcile with overall score | Category totals reconciled with the overall 6/10 result | Pass |
+| M06 | Review answers after submission | Correct and incorrect answers should be clearly identified | Answer review displayed selected and correct answers | Pass |
+| M07 | Save quiz result | Completed result should be written to persistent CSV storage | Result written successfully to `results.csv` | Pass |
+| M08 | Display results dashboard | Dashboard should show stored metrics and previous attempts | Metrics, chart and results table displayed correctly | Pass |
+| M09 | Export results | User should be able to download stored results as CSV | CSV download completed successfully | Pass |
+| M10 | Empty results file | Application should display a no-results message without crashing | No-results message displayed correctly | Pass |
+| M11 | GitHub Actions | Push should trigger automated tests | GitHub Actions completed successfully | Pass |
+
+The manual tests covered both normal user behaviour and edge cases. Testing identified an integration issue where an empty results file could cause the dashboard to interpret the data incorrectly. The result-storage logic was subsequently updated to validate the structure of the existing CSV before appending new results. Re-testing confirmed that the application could handle an empty results file correctly.
 
 ### Continuous Integration
 
