@@ -109,6 +109,39 @@ The application uses object-oriented programming to separate the responsibilitie
 
 The `Quiz` class manages a collection of `Question` objects, the participant's score and their submitted answers. Its methods handle answer submission, percentage calculation and category-level performance analysis. Separating these responsibilities keeps the core quiz logic independent from the Streamlit user interface and makes the classes easier to test using pytest.
 
+### Application Architecture
+
+```mermaid
+flowchart LR
+    A[User] --> B[Streamlit Interface<br/>app.py]
+
+    B --> C[Input Validation<br/>validation.py]
+    B --> D[Quiz Logic<br/>quiz.py]
+    B --> E[Data Management<br/>data_manager.py]
+
+    E --> F[(questions.csv)]
+    E --> G[(results.csv)]
+
+    F --> E
+    E --> D
+
+    D --> H[Score & Percentage]
+    D --> I[Category Performance]
+    D --> J[Answer Review]
+
+    H --> B
+    I --> B
+    J --> B
+
+    G --> K[Results Dashboard]
+    K --> B
+    K --> L[CSV Export]
+```
+
+The application follows a modular structure in which the Streamlit interface is separated from validation, quiz logic and data management. `app.py` coordinates the user interface but delegates specific responsibilities to the other modules.
+
+`validation.py` validates participant input, `quiz.py` contains the object-oriented quiz and scoring logic, and `data_manager.py` manages CSV loading and persistent result storage using pandas. This separation reduces duplication, improves maintainability and allows the core logic to be tested independently from the graphical interface.
+
 ## Development
 
 ### Object-Oriented Design
