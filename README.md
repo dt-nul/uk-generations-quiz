@@ -83,8 +83,31 @@ flowchart TD
 
 ### Code Design
 
-<!-- Add class diagram and explain Question, Quiz and data-management responsibilities. -->
+```mermaid
+classDiagram
+    class Question {
+        +str question_text
+        +list options
+        +str correct_answer
+        +str category
+        +str source
+        +is_correct(answer) bool
+    }
 
+    class Quiz {
+        +list questions
+        +int score
+        +list answers
+        +submit_answer(question, answer)
+        +calculate_percentage() float
+        +calculate_category_performance() dict
+    }
+
+    Quiz "1" o-- "*" Question : contains
+```
+The application uses object-oriented programming to separate the responsibilities of individual questions from the overall quiz. The `Question` class stores the question text, answer options, correct answer, category and source, while its `is_correct()` method checks a submitted answer.
+
+The `Quiz` class manages a collection of `Question` objects, the participant's score and their submitted answers. Its methods handle answer submission, percentage calculation and category-level performance analysis. Separating these responsibilities keeps the core quiz logic independent from the Streamlit user interface and makes the classes easier to test using pytest.
 
 ## Development
 
