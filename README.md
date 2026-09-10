@@ -18,9 +18,17 @@ The original minimum viable product (MVP) covered participant-name validation, a
 
 ### GUI Design
 
-<!-- Add final GUI prototype screenshot here before submission. -->
+Before implementation, a low-fidelity GUI prototype was created in PowerPoint to plan the main stages of the application interface.
 
-The planned interface was designed around a simple user journey: participant identification, quiz completion, result feedback and historical performance. The final Streamlit implementation retains this structure while adding category-level feedback, answer review and a results dashboard.
+The first screen shows the planned quiz interface, including participant name entry, multiple-choice questions, data provenance and quiz submission.
+
+![Quiz GUI prototype](evidence/12_gui_prototype_quiz.png)
+
+The second screen shows the planned results interface, including the overall result, category performance, answer review and results dashboard.
+
+![Results GUI prototype](evidence/13_gui_prototype_results.png)
+
+The prototype established the intended progression from quiz completion to feedback and results analysis. The final Streamlit implementation retained this overall structure while the presentation and functionality were refined during development.
 
 ### User Journey
 
