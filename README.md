@@ -13,7 +13,38 @@ The quiz uses demographic and population statistics from Statista reports, inclu
 
 ### User Journey
 
-<!-- Add Figma prototype/user journey screenshot. -->
+```mermaid
+flowchart TD
+    A([Start]) --> B[Open UK Generations & Consumer Insight Quiz]
+    B --> C[Enter participant name]
+    C --> D{Name valid?}
+
+    D -- No --> E[Display validation error]
+    E --> C
+
+    D -- Yes --> F[Complete 10-question quiz]
+    F --> G{All questions answered?}
+
+    G -- No --> H[Display incomplete quiz warning]
+    H --> F
+
+    G -- Yes --> I[Submit quiz]
+    I --> J[Calculate score and percentage]
+    J --> K{Score 70% or above?}
+
+    K -- Yes --> L[Display Pass]
+    K -- No --> M[Display Not yet passed]
+
+    L --> N[Display category performance]
+    M --> N
+
+    N --> O[Display answer review]
+    O --> P[Save result to CSV]
+    P --> Q[Update results dashboard]
+    Q --> R[View previous results and metrics]
+    R --> S[Download results CSV]
+    S --> T([End])
+```
 
 ### Functional Requirements
 
