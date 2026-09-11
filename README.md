@@ -61,28 +61,27 @@ The journey includes both successful and error-handling paths. Invalid names ret
 
 ### Functional Requirements
 
-| ID | Requirement |
-|---|---|
-| FR1 | Accept and validate a participant name. |
-| FR2 | Load ten multiple-choice questions from CSV storage. |
-| FR3 | Allow questions to be answered through a GUI and prevent incomplete submission. |
-| FR4 | Calculate score, percentage and a 70% pass threshold. |
-| FR5 | Display category-level performance and post-quiz answer review. |
-| FR6 | Save completed results persistently. |
-| FR7 | Display stored results, summary metrics and performance over time. |
-| FR8 | Allow stored results to be exported as CSV. |
+| Requirement |
+|---|
+| Accept and validate a participant name. |
+| Load ten multiple-choice questions from CSV storage. |
+| Allow questions to be answered through a GUI and prevent incomplete submission. |
+| Calculate score, percentage and a 70% pass threshold. |
+| Display category-level performance and post-quiz answer review. |
+| Save completed results persistently. |
+| Display stored results, summary metrics and performance over time. |
+| Allow stored results to be exported as CSV. |
 
 ### Non-functional Requirements
 
-| ID | Requirement |
-|---|---|
-| NFR1 | Provide a clear and easy-to-use interface. |
-| NFR2 | Handle invalid input and data errors without crashing. |
-| NFR3 | Keep core logic independently testable and modular. |
-| NFR4 | Use meaningful names, type hints, comments and docstrings. |
-| NFR5 | Persist results between application sessions. |
-| NFR6 | Run automated tests through continuous integration. |
-
+| Requirement |
+|---|
+| Provide a clear and easy-to-use interface. |
+| Handle invalid input and data errors without crashing. |
+| Keep core logic independently testable and modular. |
+| Use meaningful names, type hints, comments and docstrings. |
+| Persist results between application sessions. |
+| Run automated tests through continuous integration. |
 ### Technology Stack
 
 | Technology | Purpose |
@@ -95,6 +94,8 @@ The journey includes both successful and error-handling paths. Invalid names ret
 | GitHub Actions | Continuous integration |
 | CSV | Persistent data storage |
 | Mermaid | Technical diagrams |
+| PowerPoint | Low-fidelity GUI prototyping |
+| Streamlit Community Cloud | Application deployment |
 
 ### Code Design
 
@@ -121,7 +122,7 @@ classDiagram
     Quiz "1" o-- "*" Question : contains
 ```
 
-`Question` represents one multiple-choice question and checks whether an answer is correct. `Quiz` manages the question collection, score, submitted answers, percentage and category analysis. Separating this business logic from Streamlit made it easier to test independently and reduced coupling between presentation and scoring.
+`Question` represents one multiple-choice question and checks whether an answer is correct. `Quiz` manages the question collection, score, submitted answers, percentage and category analysis. Keeping the quiz logic separate from the Streamlit interface made the code easier to test and meant the scoring logic could be changed without having to redesign the user interface.
 
 ### Application Architecture
 
@@ -150,7 +151,7 @@ The modular architecture separates interface, validation, quiz logic and data ma
 
 ### Core Logic and Object-Oriented Design
 
-The `Question` and `Quiz` classes in `quiz.py` contain the core object-oriented logic. `Question.is_correct()` encapsulates answer checking, while `Quiz.submit_answer()` updates the score and records each response.
+The `Question` and `Quiz` classes in `quiz.py` contain the main logic used to run and score the quiz. `Question.is_correct()` encapsulates answer checking, while `Quiz.submit_answer()` updates the score and records each response.
 
 The following method is taken directly from the final `Quiz` class:
 
@@ -175,7 +176,7 @@ def submit_answer(self, question: Question, answer: str) -> None:
 
 The `Quiz` object delegates answer checking to the supplied `Question` rather than duplicating the comparison. Recording the answer and its correctness allows the same data to support category analysis and answer review.
 
-`calculate_percentage()` also handles an empty quiz by returning `0.0`, preventing division by zero. `calculate_category_performance()` uses a nested dictionary to group submitted answers by category, count correct responses and calculate a percentage for each area.
+`calculate_percentage()` also handles an empty quiz by returning `0.0`, preventing division by zero. `calculate_category_performance()` uses a dictionary for each category to store the number of correct answers, total questions and percentage score.
 
 ### Data Handling and Persistence
 
@@ -221,7 +222,7 @@ def validate_name(name: str) -> bool:
     return bool(re.fullmatch(r"[A-Za-z]+(?: [A-Za-z]+)*", cleaned_name))
 ```
 
-The function depends only on its input parameter and has no external state, so the same input consistently produces the same output. This makes it independently testable with pytest. Inputs containing numbers, such as `Daniel123`, are rejected.
+The function depends only on its input parameter and has no external state, so the same input consistently produces the same output. This makes it independently testable with pytest. Inputs containing numbers, such as `DanielT123`, are rejected.
 
 Exception handling is used when loading questions and results. Missing files, malformed CSV data and empty result files are handled without allowing an unhandled exception to terminate the application.
 
@@ -300,19 +301,19 @@ python -m pytest
 
 ### Manual Testing
 
-| ID | Test | Expected result | Actual result | Status |
-|---|---|---|---|---|
-| M01 | Valid name | Quiz displayed | Quiz displayed | Pass |
-| M02 | Name containing numbers | Validation error | Validation error | Pass |
-| M03 | Unanswered questions | Warning; no score | Warning displayed | Pass |
-| M04 | Mixed answers | Correct score/percentage | Multiple scores verified | Pass |
-| M05 | Category analysis | Totals reconcile to score | Totals reconciled | Pass |
-| M06 | Answer review | Correct/incorrect feedback | Feedback displayed | Pass |
-| M07 | Save result | CSV updated | Result saved | Pass |
-| M08 | Dashboard | Metrics/table/chart shown | Displayed correctly | Pass |
-| M09 | CSV export | Results downloaded | Download successful | Pass |
-| M10 | Empty results file | No crash | Empty state displayed | Pass |
-| M11 | CI | Push runs tests | Workflow successful | Pass |
+| Test | Expected result | Actual result | Status |
+|---|---|---|---|
+| Valid name | Quiz displayed | Quiz displayed | Pass |
+| Name containing numbers | Validation error | Validation error | Pass |
+| Unanswered questions | Warning; no score | Warning displayed | Pass |
+| Mixed answers | Correct score/percentage | Multiple scores verified | Pass |
+| Category analysis | Totals reconcile to score | Totals reconciled | Pass |
+| Answer review | Correct/incorrect feedback | Feedback displayed | Pass |
+| Save result | CSV updated | Result saved | Pass |
+| Dashboard | Metrics/table/chart shown | Displayed correctly | Pass |
+| CSV export | Results downloaded | Download successful | Pass |
+| Empty results file | No crash | Empty state displayed | Pass |
+| CI | Push runs tests | Workflow successful | Pass |
 
 The empty-results-file defect was found through integration testing even though individual unit tests were passing. This demonstrated why unit and manual testing were both necessary.
 
@@ -330,31 +331,41 @@ This provides a repeatable check that the project works outside my local develop
 
 ### User Documentation
 
-To run the application, install the project dependencies:
+The deployed quiz can be accessed through the [UK Generations & Consumer Insight Quiz](https://uk-generations-quiz-k7ruudwjlt92g96vprxg3s.streamlit.app/) web application.
+
+To use the quiz:
+
+1. Enter your name using letters and spaces only.
+2. Answer all ten multiple-choice questions.
+3. Select **Submit Quiz**.
+4. Review your score, percentage, pass result, category performance and answer review.
+5. View previous attempts and summary measures in the **Results Dashboard**.
+6. Select **Download Results CSV** to export the stored results.
+
+Invalid names display a validation message. If any questions are unanswered, the application displays a warning and does not score or save the attempt.
+
+### Technical Documentation
+
+The application was developed using **Python 3.14.4**.
+
+Install the required project dependencies using:
 
 ```powershell
 python -m pip install -r requirements.txt
 ```
-
-Then start Streamlit:
+The application can be run locally using:
 
 ```powershell
 python -m streamlit run app.py
 ```
 
-The user enters a valid name, answers all ten questions and selects **Submit Quiz**. The application displays the overall result, category analysis and answer review. Previous attempts are available through the dashboard and can be downloaded as CSV.
-
-Invalid names display a validation message, while incomplete quizzes produce a warning and are not scored.
-
-### Technical Documentation
-
-Automated tests can be executed locally using:
+Automated tests can be run locally using:
 
 ```powershell
 python -m pytest
 ```
 
-The application was developed using **Python 3.14.4**.
+The project is separated into the following files and folders:
 
 | File | Responsibility |
 |---|---|
@@ -369,15 +380,15 @@ The application was developed using **Python 3.14.4**.
 | `evidence/` | Development and testing evidence |
 
 ---
-
 ## Evaluation
 
-The project met its original workplace-learning aim and exceeded the MVP by adding category analysis, answer review, persistent reporting and export. The modular structure is a key strength: separating Streamlit, validation, data handling and quiz logic supported incremental development and independent testing.
+I am particularly pleased that the finished application feels like something that could genuinely be used within the Consumer Insight team rather than only being an academic exercise. Category performance and answer review make the quiz useful for developing knowledge rather than simply producing a score. I was also happy with the appearance of the application and dashboard. Streamlit provided components such as metrics, charts and feedback messages, while deployment through Streamlit Community Cloud made the project feel like a complete application that colleagues could access.
 
-TDD provided clear expected behaviour while GitHub Actions added repeatable independent verification. Manual integration testing was equally valuable because it exposed the empty-results-file problem that isolated tests had not revealed. Fixing and re-testing this issue improved resilience and demonstrated the importance of testing components together as well as individually.
+One of the most useful problems I encountered was the empty `results.csv` file. Although the unit tests were passing, the dashboard still failed because the file did not contain the expected structure. Fixing this showed me why manual and integration testing are important alongside automated tests.
 
-Category performance and answer review add practical value by helping participants identify weaker knowledge areas and learn from incorrect responses. The dashboard provides a simple view of previous attempts and makes the underlying results reusable through CSV export.
+For a larger version, I would replace CSV storage with a database and consider splitting the quiz across multiple pages. Authentication and question administration could also be added. However, I learned that adding more features is not always the best use of development time. Once the useful enhancements were complete, focusing on testing, documentation, deployment and reliability was more valuable than continuing to expand the scope.
 
-CSV storage is appropriate for this project's scope but is the main technical limitation. A larger multi-user application would benefit from a database to improve concurrent access, security and scalability. The ten-question single-page layout also requires substantial scrolling.
+---
+## Sources
 
-Future development could therefore include a database backend, authentication and role-based dashboard access, question administration and paginated quiz navigation. I deliberately excluded these once the planned enhancements were complete to avoid unnecessary scope expansion and preserve a reliable, tested final application.
+The quiz questions were developed using data from the [Statista – Generations in the UK](https://www.statista.com/study/135303/uk-generations/) report. Individual questions display their relevant source and category within the application.
