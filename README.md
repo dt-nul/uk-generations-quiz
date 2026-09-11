@@ -259,9 +259,9 @@ Streamlit provides the GUI while the underlying validation, quiz and storage log
 
 After submission the application displays score, percentage and pass status, followed by category performance and answer review. Incorrect responses reveal the correct answer, turning the application into a learning tool rather than only a scoring mechanism.
 
-![Category performance evidence](evidence/10_category_performance.png)
+![Category performance evidence](evidence/10_category_performance.PNG)
 
-![Answer review evidence](evidence/11_answer_review.png)
+![Answer review evidence](evidence/11_answer_review.PNG)
 
 The dashboard uses stored results to display total attempts, average score, pass rate, historical results and a performance chart. The DataFrame can also be downloaded as CSV.
 
