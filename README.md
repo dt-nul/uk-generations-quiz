@@ -22,11 +22,11 @@ Before implementation, a low-fidelity GUI prototype was created in PowerPoint to
 
 The first screen shows the planned quiz interface, including participant name entry, multiple-choice questions, data provenance and quiz submission.
 
-![Quiz GUI prototype](evidence/12_gui_prototype_quiz.png)
+![Quiz GUI prototype](evidence/12_gui_prototype_quiz.PNG)
 
 The second screen shows the planned results interface, including the overall result, category performance, answer review and results dashboard.
 
-![Results GUI prototype](evidence/13_gui_prototype_results.png)
+![Results GUI prototype](evidence/13_gui_prototype_results.PNG)
 
 The prototype established the intended progression from quiz completion to feedback and results analysis. The final Streamlit implementation retained this overall structure while the presentation and functionality were refined during development.
 
@@ -259,9 +259,9 @@ Streamlit provides the GUI while the underlying validation, quiz and storage log
 
 After submission the application displays score, percentage and pass status, followed by category performance and answer review. Incorrect responses reveal the correct answer, turning the application into a learning tool rather than only a scoring mechanism.
 
-![Category performance evidence](evidence/10_category_performance.PNG)
+![Category performance evidence](evidence/10_category_performance.png)
 
-![Answer review evidence](evidence/11_answer_review.PNG)
+![Answer review evidence](evidence/11_answer_review.png)
 
 The dashboard uses stored results to display total attempts, average score, pass rate, historical results and a performance chart. The DataFrame can also be downloaded as CSV.
 
