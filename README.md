@@ -102,24 +102,24 @@ The journey includes both successful and error-handling paths. Invalid names ret
 ```mermaid
 classDiagram
     class Question {
-        +str question_text
-        +list options
-        +str correct_answer
-        +str category
-        +str source
-        +is_correct(answer) bool
+        +question_text
+        +options
+        +correct_answer
+        +category
+        +source
+        +is_correct(answer)
     }
 
     class Quiz {
-        +list questions
-        +int score
-        +list answers
+        +questions
+        +score
+        +answers
         +submit_answer(question, answer)
-        +calculate_percentage() float
-        +calculate_category_performance() dict
+        +calculate_percentage()
+        +calculate_category_performance()
     }
 
-    Quiz "1" o-- "*" Question : contains
+    Quiz --> Question : contains
 ```
 
 `Question` represents one multiple-choice question and checks whether an answer is correct. `Quiz` manages the question collection, score, submitted answers, percentage and category analysis. Keeping the quiz logic separate from the Streamlit interface made the code easier to test and meant the scoring logic could be changed without having to redesign the user interface.
